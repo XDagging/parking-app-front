@@ -1,5 +1,3 @@
-import React from "react";
-
 import {View, Text} from "react-native";
 import { AlertType } from "types";
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -13,7 +11,7 @@ export default function Alert(props: AlertType) {
 
 
     return (
-        <View>
+        <View  pointerEvents="none">
 
       
         {(props.message&&props.message.length>0) && (

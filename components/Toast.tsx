@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import {View, Text} from "react-native"
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -14,7 +14,7 @@ export default function Toast(props: ToastType) {
     
     useEffect(() => {
         if (typeof props.message === "string" && props.message.length>0) {
-            console.log("this was triggered")
+            console.log("Toast opened")
         
         }   
         setIsWarning(props.isWarning);
@@ -27,7 +27,7 @@ export default function Toast(props: ToastType) {
 
 
 
-        <View>
+        <View  pointerEvents="none">
         {(props.message&&props.message.length>0) && (
 
 
@@ -41,26 +41,12 @@ export default function Toast(props: ToastType) {
 
                  : 
 
-                 <View className="bg-success text-success-content shadow-md  flex flex-row items-center gap-2 border-b p-3">
-<MaterialCommunityIcons name="hand-okay" size={24} color="black" />
-            <Text className="font-inter text-success-content">
-                {props.message}
-            </Text>
-
-
-
-
-
-
-
-
-
-
-
-
-        </View>
-            
-            
+                 <View className="bg-success text-success-content shadow-md flex-row items-center gap-2 border-b p-3">
+                   <MaterialCommunityIcons name="hand-okay" size={24} color="black" />
+                   <Text className="font-inter text-success-content">
+                       {props.message}
+                   </Text>
+               </View>
         )}
         </View>
 

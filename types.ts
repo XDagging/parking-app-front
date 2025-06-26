@@ -18,6 +18,6 @@ export type Coordinate = {
     longitude: number
 }
 
-
+export type IntervalType = ReturnType<typeof setInterval>
 
 export interface AlertType extends ToastType {}

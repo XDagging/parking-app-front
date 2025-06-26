@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { View, Text, Animated, Easing } from "react-native";
-import AntDesign from "@expo/vector-icons/AntDesign";
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import Alert from "./Alert";
 // import { styled } from "nativewind";
 
@@ -26,9 +26,9 @@ export default function Loading() {
   });
 
   return (
-    <View className="flex gap-2 items-center">
+    <View className="flex flex-1 flex-col justify-center gap-2"  pointerEvents="none">
       <Animated.View style={{ transform: [{ rotate: spin }] }}>
-        <AntDesign name="loading1" size={48} color="black" />
+        <FontAwesome5 name="car-side" size={24} color="black" />
       </Animated.View>
       <Text className="mt-2 text-center text-xl font-inter">Give us a moment to process</Text>
 
