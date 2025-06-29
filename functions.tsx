@@ -20,6 +20,7 @@ export function formatString(str: string): string {
 
 
 export function buildFeatures(latitude: number, longitude: number): number[] {
+
     const now = new Date();
     const hour = now.getHours();
     const location_id = `${latitude.toFixed(4)}_${longitude.toFixed(4)}`;
@@ -35,19 +36,20 @@ export function buildFeatures(latitude: number, longitude: number): number[] {
   
 
     return [hour,  now.getDay(),  ((Number(now.getDay())!==0)&&(now.getDay()!==6) ? false : true) ? 1 : 0 ,location_encoded, historical_risk];
-}
+
+  }
 
 
 
 
 // Grid function that will go around the person's location till they find the spot
 
-export function recursiveRequest(
+export async function recursiveRequest(
   latitude: number,
   longitude: number,
-  maxTries: number = 20,
+  maxTries: number = 40,
   placesTried: Coordinate[] = []
-): Coordinate | Coordinate[] {
+): Promise<Coordinate | Coordinate[]> {
   const offsets = [
     [0, 0],
     [0.0005, -0.0005],
@@ -71,6 +73,8 @@ export function recursiveRequest(
     console.log("lat tried", newLat)
 
     const features = buildFeatures(newLat, newLng);
+    // return {latitude: 0, longitude: 0}
+    
     if (features[3] === -1) {
       placesTried.push({ latitude: newLat, longitude: newLng });
       // This would mean they aren't in the area/unapplicable
@@ -83,7 +87,7 @@ export function recursiveRequest(
     }
 
 
-    const prediction = predictClass(features);
+    const prediction = await predictClass(features);
     console.log("Going through cycle 1", features)
     console.log("Prediction", prediction)
 
@@ -103,11 +107,11 @@ export function recursiveRequest(
 }
 
 
-export const predictClass = (features: number[]) => {
+export const predictClass = async(features: number[]) => {
     console.log("in the predict class")
   
     // This error is just wrong chat
-    const probabilities = score(features);
+    const probabilities = await score(features);
     console.log("just passed probabilities")
     let maxIndex = 0;
     for (let i = 1; i < probabilities.length; i++) {
@@ -147,7 +151,7 @@ export default async function callApi(
   method: string,
   body: any,
 ): Promise<any> {
-  const endpoint = 'http://192.168.1.234';
+  const endpoint: string = 'https://api.plastuchino.xyz';
   console.log(endpoint);
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -156,6 +160,7 @@ export default async function callApi(
 
   const authToken = await getAuth();
   console.log("Auth token in callApi", authToken);
+  
   if (authToken !== null) {
     headers["Authorization"] = `${authToken}`;
   }

@@ -18,6 +18,9 @@ export default function Loading() {
         useNativeDriver: true,
       })
     ).start();
+    return () => {
+      spinAnim.stopAnimation()
+    } 
   }, []);
 
   const spin = spinAnim.interpolate({
@@ -27,8 +30,8 @@ export default function Loading() {
 
   return (
     <View className="flex flex-1 flex-col justify-center gap-2"  pointerEvents="none">
-      <Animated.View style={{ transform: [{ rotate: spin }] }}>
-        <FontAwesome5 name="car-side" size={24} color="black" />
+      <Animated.View className="w-fit h-fit" style={{ transform: [{ rotate: spin }] }}>
+        <FontAwesome5 name="car-side" className="w-fit h-fit" size={24} color="black" />
       </Animated.View>
       <Text className="mt-2 text-center text-xl font-inter">Give us a moment to process</Text>
 

@@ -13,6 +13,8 @@ import LocationEncoder from "assets/location_encoder.json"
 import ReportModal from "components/ReportModal";
 import {Coordinate} from "types"
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+
+const maxTries = 60;
 // Add type for LocationEncoder to avoid type errors
 // const LocationEncoderTyped: { [key: string]: number } = LocationEncoder as { [key: string]: number };
 let interval: ReturnType<typeof setInterval>;
@@ -23,6 +25,22 @@ export default function Dashboard() {
     const changeModal = () => {
         setModalOpen((prevValue) => !prevValue)
     }
+function msToTime(duration: number) {
+  const totalSeconds = Math.floor(duration / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  return { hours, minutes, seconds };
+}
+    function getRemainingTime() {
+  const now = new Date();
+  const endOfHour = new Date(now);
+  endOfHour.setMinutes(59, 59, 999); // last millisecond of this hour
+  return endOfHour.getTime() - now.getTime();
+}
+
+
     const [parkingStatus, setParkingStatus] = useState<ParkingStatus>({
       isOpen: true,
       minutesAvailable: 40,
@@ -85,19 +103,17 @@ export default function Dashboard() {
       const { latitude, longitude } = location.coords;
       console.log("latitude: ", latitude);
       // Calculate milliseconds until the end of the current hour
-      const now = new Date();
-      const endOfHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() + 1, 0, 0, 0);
-      const valueGivenByApi: number = endOfHour.getTime();
-
-      console.log(valueGivenByApi)
+    
+      // console.log(valueGivenByApi)
           console.log("Heres the thing here")
           interval = setInterval(() => {
-            setTimer(valueGivenByApi - Date.now())
+            setTimer(getRemainingTime())
+
           }, 1000)
 
 
           
-        const pred = recursiveRequest(latitude, longitude, 20, [])
+        const pred = await recursiveRequest(latitude, longitude, maxTries, [])
         console.log("pred was called", pred) 
       //  If array, that means no parking spot was found
        if (Array.isArray(pred)) {
@@ -157,7 +173,7 @@ export default function Dashboard() {
 
     }
      
-    const pred = recursiveRequest(latitude,longitude,20, [{latitude: latitude, longitude: longitude}])
+    const pred = await recursiveRequest(latitude,longitude, maxTries, [{latitude: latitude, longitude: longitude}])
 
     if (Array.isArray(pred)) {
          setParkingStatus({
@@ -165,18 +181,43 @@ export default function Dashboard() {
           minutesAvailable: 0,
           url: ""
         })
+        
        } else if (pred && typeof pred.latitude === "number" && typeof pred.longitude === "number") {
         // This means a parking spot was found
         setParkingStatus({
           isOpen: true,
-          minutesAvailable: 30, // hard coded for now, but will implement later
+          minutesAvailable: getRemainingTime(), // hard coded for now, but will implement later
           url: `https://www.google.com/maps/search/?api=1&query=${pred.latitude},${pred.longitude}`
+        })
+         setLocation({
+          coords: {
+            latitude: pred.latitude,
+            longitude: pred.longitude,
+            altitude: 0,
+            accuracy: 0,
+            altitudeAccuracy: 0,
+            heading: 0,
+            speed: 0,
+          },
+          timestamp: Date.now()
         })
        } else {
         setParkingStatus({
           isOpen: false,
           minutesAvailable: 0,
           url: ""
+        })
+         setLocation({
+          coords: {
+            latitude: pred.latitude,
+            longitude: pred.longitude,
+            altitude: 0,
+            accuracy: 0,
+            altitudeAccuracy: 0,
+            heading: 0,
+            speed: 0,
+          },
+          timestamp: Date.now()
         })
        }
 
@@ -220,7 +261,7 @@ export default function Dashboard() {
                     {/* Hours */}
                     <View>
                       <Text className="font-inter text-5xl text-primary-content">
-                        {Number(new Date(timer ?? 0).getHours())}
+                        {String(msToTime(timer).hours).padStart(2, "0")}
                       </Text>
                     </View>
                     <View>
@@ -228,7 +269,7 @@ export default function Dashboard() {
                     </View>
                     <View>
                       <Text className="font-inter text-5xl text-primary-content">
-                        {Number(new Date(timer ?? 0).getMinutes())}
+                        {String(msToTime(timer).minutes).padStart(2, "0")}
                       </Text>
                     </View>
                     <View>
@@ -236,7 +277,7 @@ export default function Dashboard() {
                     </View>
                     <View>
                       <Text className="font-inter text-5xl text-primary-content">
-                        {new Date(timer ?? 0).getSeconds()}
+                        {String(msToTime(timer).seconds).padStart(2, "0")}
                       </Text>
                     </View>
                   </View>

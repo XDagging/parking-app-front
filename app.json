@@ -25,7 +25,11 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.plastuchino.myexpoapp",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -33,6 +37,11 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.plastuchino.myexpoapp"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "1dc7a83b-ea87-483a-9a23-d6c3cfe66645"
+      }
     }
   }
 }
