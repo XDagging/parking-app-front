@@ -5,7 +5,7 @@ import Dashboard from "./pages/main/page";
 import Login from "./pages/login/page"
 import { SafeAreaView } from 'react-native-safe-area-context';
 import './global.css';
-import TestScreen from "components/TestScreen";
+// import TestScreen from "components/TestScreen";
 // import { GestureHandlerRootView } from 'react-native-gesture-handler'; // <-- Add this import
 import { useFonts, Inter_400Regular, Inter_700Bold } from '@expo-google-fonts/inter';
 import { Sora_400Regular, Sora_600SemiBold } from '@expo-google-fonts/sora';
@@ -35,13 +35,6 @@ export default function App() {
       }
   return (
     <>
-
-        {/* <SafeAreaView style={{ flex: 1 }}> */}
-          {/* <Index /> */}
-        {/* </SafeAreaView> */}
-
-          {/* <GestureHandlerRootView style={{ flex: 1 }}> */}
-     {/* r screenOptions={{ headerShown: false }} */}
      <SafeAreaView style={{ flex: 1}}>
           <NavigationContainer>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -52,8 +45,7 @@ export default function App() {
           </NavigationContainer>
       </SafeAreaView>
 
-  
-    {/* </GestureHandlerRootView> */}
+
 
 
    

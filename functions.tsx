@@ -1,7 +1,8 @@
-
-import score from "./assets/model"
 import LocationStats from "assets/location_stats.json"
 import LocationEncoder from "assets/location_encoder.json"
+import * as FileSystem from 'expo-file-system';
+import { Asset } from 'expo-asset';
+
 import type { Coordinate } from "types";
  import * as SecureStore from 'expo-secure-store';
 const LocationEncoderTyped: { [key: string]: number } = LocationEncoder as { [key: string]: number };
@@ -16,6 +17,38 @@ export function formatString(str: string): string {
   }
 
 
+let loadedScoreFunction: ((features: number[]) => number[]) | undefined;
+
+// Replace this with your actual model URL
+const MODEL_JS_URL = 'https://parking-model.s3.us-east-1.amazonaws.com/model.js';
+
+async function loadScoreFunction(): Promise<(features: number[]) => number[]> {
+  console.log("This was called chat")
+  if (loadedScoreFunction) return loadedScoreFunction;
+
+  try {
+    const response = await fetch(MODEL_JS_URL);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch model: ${response.status}`);
+    }
+
+    const script = await response.text();
+    const module = {} as any;
+    console.log("we just got the function", script.substring(0,10))
+    // Wrap in safe module scope
+    eval(`(function(exports){ ${script} })(module);`);
+
+    loadedScoreFunction = module.score;
+    if (typeof loadedScoreFunction !== 'function') {
+      throw new Error('Model script did not export a score function.');
+    }
+
+    return loadedScoreFunction;
+  } catch (error) {
+    console.error('Error loading model:', error);
+    throw error;
+  }
+}
 
 
 
@@ -26,7 +59,7 @@ export function buildFeatures(latitude: number, longitude: number): number[] {
     const location_id = `${latitude.toFixed(4)}_${longitude.toFixed(4)}`;
     const location_encoded = LocationEncoderTyped[location_id] ?? -1;
 
-    console.log("Location ID:", location_id);
+    // console.log("Location ID:", location_id);
 
     // const location_id = `${latitude.toFixed(4)}_${longitude.toFixed(4)}`;
     // const location_encoded = LocationEncoder[location_id] ?? -1;
@@ -61,7 +94,7 @@ export async function recursiveRequest(
     [-0.0005, 0],
     [-0.0005, 0.0005],
   ];
-  console.log("recursive was called")
+  // console.log("recursive was called")
   for (const [latOffset, lngOffset] of offsets) {
     const newLat = latitude + latOffset;
     const newLng = longitude + lngOffset;
@@ -70,7 +103,7 @@ export async function recursiveRequest(
     if (placesTried.some(p => p.latitude === newLat && p.longitude === newLng)) {
       continue;
     }
-    console.log("lat tried", newLat)
+    // console.log("lat tried", newLat)
 
     const features = buildFeatures(newLat, newLng);
     // return {latitude: 0, longitude: 0}
@@ -86,10 +119,10 @@ export async function recursiveRequest(
       break;
     }
 
-
+    console.log("right before the predict class")
     const prediction = await predictClass(features);
-    console.log("Going through cycle 1", features)
-    console.log("Prediction", prediction)
+    // console.log("Going through cycle 1", features)
+    // console.log("Prediction", prediction)
 
     if (prediction === 0) {
       return { latitude: newLat, longitude: newLng };
@@ -111,6 +144,8 @@ export const predictClass = async(features: number[]) => {
     console.log("in the predict class")
   
     // This error is just wrong chat
+    const score = await loadScoreFunction()
+    console.log("right after the score")
     const probabilities = await score(features);
     console.log("just passed probabilities")
     let maxIndex = 0;
